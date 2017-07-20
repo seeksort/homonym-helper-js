@@ -16,7 +16,7 @@ Interface.prototype.homonymList = (homonyms) => {
     choices: [...choices, 'Exit app'],
   }).then((answer) => {
     if (answer.homonym === 'Exit app') {
-      console.log('\nYou have exited Homonym Helper.');
+      console.log('\n> You have exited Homonym Helper. Goodbye!');
       return null;
     }
     return answer.homonym;

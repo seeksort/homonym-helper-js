@@ -1,5 +1,6 @@
 const Interface = require('./Interface');
 const FileHandler = require('./FileHandler');
+const inquirer = require('inquirer');
 
 // 1. Open file from args, store in a variable
 // 2. Load homonym dictionary and ask user to pick homonym to checks, store in a variable
@@ -8,32 +9,57 @@ const FileHandler = require('./FileHandler');
 // on user response
 
 const app = {
-  currentFileText: '',
+  runOnce: false,
 
-  currentHomonyms: '',
-// APP
-  runApp: () => {
+  start() {
+    if (!this.runOnce) {
+      this.runOnce = true;
+      this.runApp('input', process.argv[2]);
+    } else {
+      this.runApp('output', process.argv[2]);
+    }
+  },
+
+  runApp(folder, fileName) {
     const IO = new Interface();
     const UserFile = new FileHandler();
 
-    UserFile.getFile('input', process.argv[2], 'currentFileText')
+    UserFile.getFile(folder, fileName, 'currentFileText')
     .then(data => console.log(`\n=== your file output is below ===\n\n${data}`))
     .then(() => UserFile.getFile('ref', 'homonyms.txt', 'currentHomonyms'))
     .then(homonyms => IO.homonymList(homonyms))
     .then((chosenHomonyms) => {
-      if (chosenHomonyms !== null) {
-        console.log('\n> Matches found. See below...\n');
-        const currentHomonyms = chosenHomonyms.substring(1, chosenHomonyms.length - 1);
-        const cleanTextArr = UserFile.cleanText(UserFile.currentData.currentFileText);
-        IO.showHomonymText(currentHomonyms, IO.sentenceFragment(cleanTextArr), cleanTextArr)
-        .then(data => UserFile.writeFile(process.argv[2], data));
-        return null;
+      if (chosenHomonyms === null) {
+        // Just want to exit Promise chain, not throw a real error.
+        return Promise.reject('');
       }
-      return null;
+      console.log('\n> Matches found. See below...\n');
+      const currentHomonyms = chosenHomonyms.substring(1, chosenHomonyms.length - 1);
+      const cleanTextArr = UserFile.cleanText(UserFile.currentData.currentFileText);
+      return IO.showHomonymText(currentHomonyms, IO.sentenceFragment(cleanTextArr), cleanTextArr);
     })
+    .then((data) => {
+      UserFile.writeFile(process.argv[2], data);
+      return data;
+    })
+    .then(() => inquirer.prompt({
+      type: 'list',
+      name: 'status',
+      message: 'Do you want to run Homonym Helper on the same file again?',
+      choices: [
+        'Yes',
+        'No',
+      ],
+    })
+    .then((answer) => {
+      if (answer.status === 'Yes') {
+        this.start();
+      } else {
+        console.log('\n> You have exited Homonym Helper. Goodbye!');
+      }
+    }))
     .catch(error => console.error(error));
   },
 };
 
-
-app.runApp();
+app.start();

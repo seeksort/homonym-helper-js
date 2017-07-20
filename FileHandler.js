@@ -31,13 +31,13 @@ FileHandler.prototype.cleanText = (text) => {
   return fullTextArr;
 };
 
-FileHandler.prototype.writeFile = function (fileName, data) {
-  return new Promise(function (resolve, reject) {
-    fs.writeFile(path.join(`${__dirname}/output/${fileName}`), data, function (err, data) {
+FileHandler.prototype.writeFile = (fileName, data) => {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(path.join(`${__dirname}/output/${fileName}`), data, (err, result) => {
       if (err) {
         reject(err);
       }
-      resolve(data);
+      resolve(result);
     });
   });
 };
