@@ -17,17 +17,15 @@ const app = {
     const UserFile = new FileHandler();
 
     UserFile.getFile('input', process.argv[2], 'currentFileText')
-    .then((data) => {
-      console.log('\n=== your file is below ===\n\n');
-      console.log(data);
-    })
+    .then(data => console.log(`\n=== your file output is below ===\n\n${data}`))
     .then(() => UserFile.getFile('ref', 'homonyms.txt', 'currentHomonyms'))
     .then(homonyms => IO.homonymList(homonyms))
     .then((chosenHomonyms) => {
       if (chosenHomonyms !== null) {
-        UserFile.currentData.currentHomonyms = chosenHomonyms.substring(1, chosenHomonyms.length - 1);
+        console.log('\n> Matches found. See below...\n');
+        const currentHomonyms = chosenHomonyms.substring(1, chosenHomonyms.length - 1);
         const cleanTextArr = UserFile.cleanText(UserFile.currentData.currentFileText);
-        IO.showHomonymText(UserFile.currentData.currentHomonyms, IO.sentenceFragment(cleanTextArr));
+        IO.showHomonymText(currentHomonyms, IO.sentenceFragment(cleanTextArr), cleanTextArr);
         return null;
       }
       return null;

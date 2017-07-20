@@ -8,16 +8,16 @@ function FileHandler() {
   this.currentData = {};
 }
 
-FileHandler.prototype.getFile = (dir, fileName, objProp) => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(path.join(`${__dirname}/${dir}/${fileName}`), 'utf8', (err, data) => {
+FileHandler.prototype.getFile = function (dir, fileName, objProp) {
+  return new Promise(function (resolve, reject) {
+    fs.readFile(path.join(`${__dirname}/${dir}/${fileName}`), 'utf8', function (err, data) {
       if (err) {
         reject(err);
       }
       this.currentData[objProp] = data;
       resolve(data);
-    });
-  });
+    }.bind(this));
+  }.bind(this));
 };
 
 FileHandler.prototype.cleanText = (text) => {
