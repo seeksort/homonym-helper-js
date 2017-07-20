@@ -31,4 +31,15 @@ FileHandler.prototype.cleanText = (text) => {
   return fullTextArr;
 };
 
+FileHandler.prototype.writeFile = function (fileName, data) {
+  return new Promise(function (resolve, reject) {
+    fs.writeFile(path.join(`${__dirname}/output/${fileName}`), data, function (err, data) {
+      if (err) {
+        reject(err);
+      }
+      resolve(data);
+    });
+  });
+};
+
 module.exports = FileHandler;

@@ -68,14 +68,14 @@ Interface.prototype.showHomonymText = (currentHomonyms, textArr, fullTextArr) =>
     });
   });
   return inquirer.prompt(questions).then((res) => {
-    console.log('\n> Revisions complete! See below...\n')
+    console.log('\n> Revisions complete! See below. A new file with your revisions was also created in the output folder.\n');
     const arrToJoin = fullTextArr;
     Object.keys(res).forEach((key) => {
       arrToJoin[key] = res[key];
     });
     const joined = arrToJoin.join(' ');
     console.log(joined);
-    return null;
+    return joined;
   });
 };
 
