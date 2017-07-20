@@ -1,6 +1,8 @@
 # homonym-helper-js
 (JavaScript, Node.js) A program to check a text file to see if you've accidentally used a homonym of the word you intended to use. (e.g. there / their / they're; you're / your)
 
+<img src="screenshot.png" alt="placeholder" width="500">
+
 ## Purpose
 
 I've had this app idea in mind for awhile now. Homonyms are easy to gloss over, and spellcheckers don't always identify improper word use. I wanted to create an app in which the user makes an active choice in looking at the word in a smaller context and determining if it makes sense within that sentence.
