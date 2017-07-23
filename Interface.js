@@ -1,10 +1,11 @@
 const inquirer = require('inquirer');
 const chalk = require('chalk');
 
+let self;
+
 function Interface() {
-  this.text = '';
-  this.homonyms = '';
   this.currentHomonyms = '';
+  self = this;
 }
 
 Interface.prototype.homonymList = (homonyms) => {
@@ -19,13 +20,16 @@ Interface.prototype.homonymList = (homonyms) => {
       console.log('\n> You have exited Homonym Helper. Goodbye!');
       return null;
     }
-    return answer.homonym;
+    this.currentHomonyms = answer.homonym.substring(1, answer.homonym.length - 1).split(', ');
+    return this.currentHomonyms;
   });
 };
 
+// create an array that stores 8 word fragments of the text file for display,
+// with indices referencing word to be highlighted and placement in original text array
+// ex: [['find out if there going to open the', '3', '36']]
 Interface.prototype.sentenceFragment = (textArr) => {
-  const outputArr = [];
-  textArr.forEach((currentWord, index) => {
+  return textArr.reduce((arr, currentWord, index) => {
     let currWordArr;
     let currWordIndex;
     const fullTextArrIndex = index;
@@ -41,32 +45,34 @@ Interface.prototype.sentenceFragment = (textArr) => {
       currWordArr = textArr.slice(index - 3, index + 5);
       currWordIndex = 3;
     }
-    outputArr.push([currWordArr, currWordIndex, fullTextArrIndex]);
-  });
-  return outputArr;
+    arr.push([currWordArr, currWordIndex, fullTextArrIndex]);
+    return arr;
+  }, []);
 };
 
-Interface.prototype.showHomonymText = (currentHomonyms, textArr, fullTextArr) => {
-  const homonyms = currentHomonyms.split(', ');
-  // console.log(textArr);
-  const matches = [];
+Interface.prototype.questionsList = (currentHomonyms, textFragments) => {
   const questions = [];
-  textArr.forEach((currentArr, index) => {
+  textFragments.forEach((currentArr) => {
     const currWordArr = currentArr[0];
     const currWordIndex = currentArr[1];
-    homonyms.forEach((current) => {
+    currentHomonyms.forEach((current) => {
       if (currWordArr[currWordIndex].toLowerCase().match(current) !== null) {
         const questionObj = {
           type: 'list',
-          name: `${index}`,
+          name: `${currentArr[2]}`,
           message: chalk `Please select replacement homonym: {yellow ${currWordArr.slice(0, currWordIndex).join(' ')}}${currWordIndex !== 0 ? ' ' : ''}{green.bold ${currWordArr[currWordIndex]}} {yellow ${currWordArr.slice(currWordIndex + 1, currWordArr.length).join(' ')}}`,
-          choices: homonyms,
+          choices: currentHomonyms,
         };
-        matches.push(index);
         questions.push(questionObj);
       }
     });
   });
+  return questions;
+};
+
+Interface.prototype.homonymReplacer = (fullTextArr) => {
+  const textFragments = self.sentenceFragment(fullTextArr);
+  const questions = self.questionsList(this.currentHomonyms, textFragments);
   return inquirer.prompt(questions).then((res) => {
     console.log('\n> Revisions complete! See below. A new file with your revisions was also created in the output folder.\n');
     const arrToJoin = fullTextArr;
@@ -74,7 +80,7 @@ Interface.prototype.showHomonymText = (currentHomonyms, textArr, fullTextArr) =>
       arrToJoin[key] = res[key];
     });
     const joined = arrToJoin.join(' ');
-    console.log(joined);
+    console.log(`${joined}\n`);
     return joined;
   });
 };

@@ -34,10 +34,10 @@ const app = {
         return Promise.reject('');
       }
       console.log('\n> Matches found. See below...\n');
-      const currentHomonyms = chosenHomonyms.substring(1, chosenHomonyms.length - 1);
       const cleanTextArr = UserFile.cleanText(UserFile.currentData.currentFileText);
-      return IO.showHomonymText(currentHomonyms, IO.sentenceFragment(cleanTextArr), cleanTextArr);
+      return IO.homonymReplacer(cleanTextArr);
     })
+    // After showing new output to user (in homonymReplacer above), write to new file in output dir
     .then((data) => {
       UserFile.writeFile(process.argv[2], data);
       return data;
