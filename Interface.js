@@ -50,21 +50,42 @@ Interface.prototype.sentenceFragment = (textArr) => {
   }, []);
 };
 
+Interface.prototype.wordCaseMatcher = (origWord, homonyms) => {
+  const origWordArr = origWord.split('');
+  const formattedHomonyms = homonyms;
+  if (origWordArr[0] === origWordArr[0].toUpperCase()) {
+    homonyms.forEach((homonym, index) => {
+      const homonymArr = homonym.split('');
+      homonymArr[0] = homonymArr[0].toUpperCase();
+      formattedHomonyms[index] = homonymArr.join('');
+    });
+  } else {
+    homonyms.forEach((homonym, index) => {
+      formattedHomonyms[index] = homonym.toLowerCase();
+    });
+  }
+  return formattedHomonyms;
+};
+
 Interface.prototype.questionsList = (currentHomonyms, textFragments) => {
   const questions = [];
   textFragments.forEach((currentArr) => {
+    let formattedHomonyms = currentHomonyms;
     const currWordArr = currentArr[0];
     const currWordIndex = currentArr[1];
     currentHomonyms.forEach((current) => {
-      if (currWordArr[currWordIndex].toLowerCase().match(current) !== null) {
+      if (currWordArr[currWordIndex].toLowerCase().match(current.toLowerCase()) !== null) {
+        // functions in loops are funny; use an IIFE for proper output
+        formattedHomonyms = () => self.wordCaseMatcher(currWordArr[currWordIndex], currentHomonyms); 
         const questionObj = {
           type: 'list',
           name: `${currentArr[2]}`,
           message: chalk `Please select replacement homonym: {yellow ${currWordArr.slice(0, currWordIndex).join(' ')}}${currWordIndex !== 0 ? ' ' : ''}{green.bold ${currWordArr[currWordIndex]}} {yellow ${currWordArr.slice(currWordIndex + 1, currWordArr.length).join(' ')}}`,
-          choices: currentHomonyms,
+          choices: formattedHomonyms,
         };
         questions.push(questionObj);
       }
+      formattedHomonyms = currentHomonyms;
     });
   });
   return questions;
