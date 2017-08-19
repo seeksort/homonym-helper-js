@@ -17,7 +17,7 @@ Interface.prototype.homonymList = (homonyms) => {
     choices: [...choices, 'Exit app'],
   }).then((answer) => {
     if (answer.homonym === 'Exit app') {
-      console.log('\n> You have exited Homonym Helper. Goodbye!');
+      console.log(chalk `{green ${'\n> You have exited Homonym Helper. Goodbye!'}}`);
       return null;
     }
     this.currentHomonyms = answer.homonym.substring(1, answer.homonym.length - 1).split(', ');
@@ -78,9 +78,9 @@ Interface.prototype.homonymFormatter = (origWord, homonyms) => {
 Interface.prototype.questionsList = (currentHomonyms, textFragments) => {
   const questions = [];
   textFragments.forEach((currentArr) => {
-    const formattedHomonyms = self.homonymFormatter(currWordArr[currWordIndex], currentHomonyms);
     const currWordArr = currentArr[0];
     const currWordIndex = currentArr[1];
+    const formattedHomonyms = self.homonymFormatter(currWordArr[currWordIndex], currentHomonyms);
     currentHomonyms.forEach((currentHomonym, i) => {
       if (currWordArr[currWordIndex].toLowerCase().match(formattedHomonyms[i].toLowerCase()) !== null) {
         // Had to call again from within inner loop, need to optimize; currently O(n^3)

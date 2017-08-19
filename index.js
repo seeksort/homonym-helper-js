@@ -1,6 +1,7 @@
 const Interface = require('./Interface');
 const FileHandler = require('./FileHandler');
 const inquirer = require('inquirer');
+const chalk = require('chalk');
 
 // 1. Open file from args, store in a variable
 // 2. Load homonym dictionary and ask user to pick homonym to checks, store in a variable
@@ -23,9 +24,12 @@ const app = {
   runApp(folder, fileName) {
     const IO = new Interface();
     const UserFile = new FileHandler();
+    console.log(chalk `{green.bold ${'\n=================================='}}`);
+    console.log(chalk `{green.bold ${'=== Welcome to Homonym Helper! ==='}}`);
+    console.log(chalk `{green.bold ${'=================================='}}`);
 
     UserFile.getFile(folder, fileName, 'currentFileText')
-    .then(data => console.log(`\n=== your file output is below ===\n\n${data}`))
+    .then(data => console.log(chalk `{green ${'\nyour file output is below!\n\n\n\n'}}${data}`))
     .then(() => UserFile.getFile('ref', 'homonyms.txt', 'currentHomonyms'))
     .then(homonyms => IO.homonymList(homonyms))
     .then((chosenHomonyms) => {
@@ -55,7 +59,7 @@ const app = {
       if (answer.status === 'Yes') {
         this.start();
       } else {
-        console.log('\n> You have exited Homonym Helper. Goodbye!');
+        console.log(chalk `{green ${'\n> You have exited Homonym Helper. Goodbye!'}}`);
       }
     }))
     .catch(error => console.error(error));
