@@ -17,7 +17,7 @@ Interface.prototype.homonymList = (homonyms) => {
     choices: [...choices, 'Exit app'],
   }).then((answer) => {
     if (answer.homonym === 'Exit app') {
-      console.log('\n> You have exited Homonym Helper. Goodbye!');
+      console.log(chalk `{green ${'\n> You have exited Homonym Helper. Goodbye!'}}`);
       return null;
     }
     this.currentHomonyms = answer.homonym.substring(1, answer.homonym.length - 1).split(', ');
@@ -50,42 +50,60 @@ Interface.prototype.sentenceFragment = (textArr) => {
   }, []);
 };
 
-Interface.prototype.wordCaseMatcher = (origWord, homonyms) => {
-  const origWordArr = origWord.split('');
+Interface.prototype.homonymFormatter = (origWord, homonyms) => {
+  // Function identifies if you are using apostrophies
+  // or single quotes and adjusts the homonym list.
+  const wordArr = origWord.split('');
   const formattedHomonyms = homonyms;
-  if (origWordArr[0] === origWordArr[0].toUpperCase()) {
-    homonyms.forEach((homonym, index) => {
-      const homonymArr = homonym.split('');
+  homonyms.forEach((homonym, index) => {
+    const homonymArr = homonym.split('');
+    // if contractions don't match, replace with apostrophe or single quote
+    // apostrophe ( ’ ) is default.
+    if (wordArr.indexOf('\'') > -1 && homonymArr.indexOf('’') > -1) {
+      homonymArr[homonymArr.indexOf('’')] = '\'';
+    } else if (homonymArr.indexOf('\'') > -1) {
+      homonymArr[homonymArr.indexOf('\'')] = '’';
+    }
+    // if first letter doesn't match, replace with proper case
+    if (wordArr[0] === wordArr[0].toUpperCase()) {
       homonymArr[0] = homonymArr[0].toUpperCase();
-      formattedHomonyms[index] = homonymArr.join('');
-    });
-  } else {
-    homonyms.forEach((homonym, index) => {
-      formattedHomonyms[index] = homonym.toLowerCase();
-    });
-  }
+    } else {
+      homonymArr[0] = homonymArr[0].toLowerCase();
+    }
+    // if word ends with punctuation
+    if (homonymArr[homonymArr.length - 1] === '?' || homonymArr[homonymArr.length - 1] === '!' || homonymArr[homonymArr.length - 1] === '.') {
+      homonymArr.pop();
+    } else if (wordArr.indexOf('?') > -1) {
+      homonymArr.push('?');
+    } else if (wordArr.indexOf('!') > -1) {
+      homonymArr.push('!');
+    } else if (wordArr.indexOf('.') > -1) {
+      homonymArr.push('.');
+    }
+    formattedHomonyms[index] = homonymArr.join('');
+  });
   return formattedHomonyms;
 };
 
-Interface.prototype.questionsList = (currentHomonyms, textFragments) => {
+Interface.prototype.questionsList = (homonyms, textFragments) => {
+  const currentHomonyms = homonyms;
   const questions = [];
   textFragments.forEach((currentArr) => {
-    let formattedHomonyms = currentHomonyms;
     const currWordArr = currentArr[0];
     const currWordIndex = currentArr[1];
-    currentHomonyms.forEach((current) => {
-      if (currWordArr[currWordIndex].toLowerCase().match(current.toLowerCase()) !== null) {
-        // functions in loops are funny; use an IIFE for proper output
-        formattedHomonyms = () => self.wordCaseMatcher(currWordArr[currWordIndex], currentHomonyms); 
+    const formattedHomonyms = self.homonymFormatter(currWordArr[currWordIndex], currentHomonyms);
+    currentHomonyms.forEach((currentHomonym, i) => {
+      if (currWordArr[currWordIndex].toLowerCase().match(formattedHomonyms[i].toLowerCase()) !== null) {
+        // Had to call again from within inner loop, need to optimize; currently O(n^3)
+        const answerChoices = () => self.homonymFormatter(currWordArr[currWordIndex], currentHomonyms);
         const questionObj = {
           type: 'list',
           name: `${currentArr[2]}`,
           message: chalk `Please select replacement homonym: {yellow ${currWordArr.slice(0, currWordIndex).join(' ')}}${currWordIndex !== 0 ? ' ' : ''}{green.bold ${currWordArr[currWordIndex]}} {yellow ${currWordArr.slice(currWordIndex + 1, currWordArr.length).join(' ')}}`,
-          choices: formattedHomonyms,
+          choices: answerChoices,
         };
         questions.push(questionObj);
       }
-      formattedHomonyms = currentHomonyms;
     });
   });
   return questions;
