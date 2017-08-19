@@ -55,13 +55,13 @@ Interface.prototype.homonymFormatter = (origWord, homonyms) => {
   // or single quotes and adjusts the homonym list.
   const wordArr = origWord.split('');
   const formattedHomonyms = homonyms;
-  formattedHomonyms.forEach((homonym, index) => {
+  homonyms.forEach((homonym, index) => {
     const homonymArr = homonym.split('');
     // if contractions don't match, replace with apostrophe or single quote
     // apostrophe ( ’ ) is default.
     if (wordArr.indexOf('\'') > -1 && homonymArr.indexOf('’') > -1) {
       homonymArr[homonymArr.indexOf('’')] = '\'';
-    } else {
+    } else if (homonymArr.indexOf('\'') > -1) {
       homonymArr[homonymArr.indexOf('\'')] = '’';
     }
     // if first letter doesn't match, replace with proper case
@@ -70,12 +70,23 @@ Interface.prototype.homonymFormatter = (origWord, homonyms) => {
     } else {
       homonymArr[0] = homonymArr[0].toLowerCase();
     }
+    // if word ends with punctuation
+    if (homonymArr[homonymArr.length - 1] === '?' || homonymArr[homonymArr.length - 1] === '!' || homonymArr[homonymArr.length - 1] === '.') {
+      homonymArr.pop();
+    } else if (wordArr.indexOf('?') > -1) {
+      homonymArr.push('?');
+    } else if (wordArr.indexOf('!') > -1) {
+      homonymArr.push('!');
+    } else if (wordArr.indexOf('.') > -1) {
+      homonymArr.push('.');
+    }
     formattedHomonyms[index] = homonymArr.join('');
   });
   return formattedHomonyms;
 };
 
-Interface.prototype.questionsList = (currentHomonyms, textFragments) => {
+Interface.prototype.questionsList = (homonyms, textFragments) => {
+  const currentHomonyms = homonyms;
   const questions = [];
   textFragments.forEach((currentArr) => {
     const currWordArr = currentArr[0];
